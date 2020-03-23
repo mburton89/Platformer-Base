@@ -17,6 +17,12 @@ public class Player : MonoBehaviour
     float grabWidth = 18f;
     #endregion
 
+    #region Raycasting Variables
+    [SerializeField] private GroundCheck _groundCheck;
+    [SerializeField] private WallCheck _wallCheckRight;
+    [SerializeField] private WallCheck _wallCheckLeft;
+    #endregion
+
     enum PlayerState
     {
         Moving,
@@ -92,7 +98,7 @@ public class Player : MonoBehaviour
                     PlayAnimationWithSprites(_runSprites);
                 }
                 //Check if player is on the ground
-                if (!place_meeting(x, y + 1, o_solid))
+                if (!_groundCheck.isTouchingGround)
                 {
                     ySpeed += gravityAcceleration;
 
@@ -148,12 +154,12 @@ public class Player : MonoBehaviour
                     ApplyFriction(acceleration);
                 }
 
-                if (place_meeting(x, y + ySpeed + 1, o_solid) and yspeed > 0)
+                if (_groundCheck.isTouchingGround && ySpeed > 0)
                 {
                     _stepAudio.Play();
                 }
 
-                Move(o_solid);
+                Move();
 
                 //Check for ledge grab state
                 //var falling = y - yprevious > 0;
@@ -221,7 +227,7 @@ public class Player : MonoBehaviour
                 {
                     _spriteRenderer.transform.localScale = new Vector3(Mathf.Sign(xSpeed), 1, 0);
                 }
-                if (!place_meeting(x, y + 1, o_solid))
+                if (!_groundCheck.isTouchingGround)
                 {
                     ySpeed += gravityAcceleration;
                 }
@@ -230,7 +236,8 @@ public class Player : MonoBehaviour
                     ySpeed = 0;
                     ApplyFriction(acceleration);
                 }
-                DirectionMoveBounce(o_solid);
+                //TODO implement DirectionMoveBounce
+                //DirectionMoveBounce(o_solid);
 
                 //Change back to the other states
                 if (xSpeed == 0 && ySpeed == 0) 
@@ -242,7 +249,7 @@ public class Player : MonoBehaviour
                     }
                     else
                     {
-                        image_blend = c_white;
+                        //image_blend = c_white;
                         CurrentState = PlayerState.Moving;
                     }
                 }
@@ -261,62 +268,83 @@ public class Player : MonoBehaviour
         #endregion
     }
 
-    void Move(GameObject collisionObject)
+    void Move()
     {
         //Horizontal Collisions
-        if (place_meeting(x + xSpeed, y, collisionObject))
+        //TODO Implement Pixel Perfect Collision
+        //if (place_meeting(x + xSpeed, y, collisionObject))
+        //{
+        //    while (!place_meeting(x + sign(xSpeed), y, collisionObject))
+        //    {
+        //        x += Mathf.Sign(xSpeed);
+        //    }
+        //    xSpeed = 0;
+        //}
+
+        //TODO replace this with pixel perfect collision
+        if (_wallCheckLeft.isApproachingWall || _wallCheckRight.isApproachingWall)
         {
-            while (!place_meeting(x + sign(xSpeed), y, collisionObject))
-            {
-                x += sign(xSpeed);
-            }
             xSpeed = 0;
         }
 
-        x += xSpeed;
+        //TODO Used Rigidbody2D
+        transform.position = new Vector3(transform.position.x + xSpeed, transform.position.y);
 
         //Vertical Collisions
-        if (place_meeting(x, y + ySpeed, collisionObject))
+        //TODO Implement Pixel Perfect Collision
+        //if (place_meeting(x, y + ySpeed, collisionObject))
+        //{
+        //    while (!place_meeting(x, y + sign(ySpeed), collisionObject))
+        //    {
+        //        y += Mathf.Sign(ySpeed);
+        //    }
+        //    ySpeed = 0;
+        //}
+
+        //TODO replace this with pixel perfect collision
+        if (_groundCheck.isTouchingGround)
         {
-            while (!place_meeting(x, y + sign(ySpeed), collisionObject))
-            {
-                y += sign(ySpeed);
-            }
             ySpeed = 0;
         }
 
-        y += ySpeed;
+        //TODO Used Rigidbody2D
+        transform.position = new Vector3(transform.position.x, transform.position.y + ySpeed);
     }
 
     void DirectionMoveBounce(GameObject collisionObject)
     {
         //Horizontal Collisions
-        if (place_meeting(x + xSpeed, y, collisionObject))
-        {
-            while (!place_meeting(x + Mathf.Sign(xSpeed), y, collisionObject))
-            {
-                x += Mathf.Sign(xSpeed);
-            }
-            xSpeed = -(xSpeed / 4);
-        }
+        //TODO Implement Pixel Perfect Collision
+        //if (place_meeting(x + xSpeed, y, collisionObject))
+        //{
+        //    while (!place_meeting(x + Mathf.Sign(xSpeed), y, collisionObject))
+        //    {
+        //        //TODO Used Rigidbody2D
+        //        transform.position = new Vector3(transform.position.x + Mathf.Sign(xSpeed), transform.position.y);
+        //    }
+        //    xSpeed = -(xSpeed / 4);
+        //}
 
-        x += xspeed;
+        //TODO Used Rigidbody2D
+        transform.position = new Vector3(transform.position.x + xSpeed, transform.position.y);
 
         //Vertical Collisions
-        if (place_meeting(x, y + ySpeed, collisionObject))
-        {
-            while (!place_meeting(x, y + Mathf.Sign(ySpeed), collisionObject))
-            {
-                y += Mathf.Sign(ySpeed);
-            }
-            ySpeed = -(ySpeed / 4);
-            if (Mathf.Abs(ySpeed) < 2)
-            {
-                ySpeed = 0;
-            }
-        }
+        //TODO Implement Pixel Perfect Collision
+        //if (place_meeting(x, y + ySpeed, collisionObject))
+        //{
+        //    while (!place_meeting(x, y + Mathf.Sign(ySpeed), collisionObject))
+        //    {
+        //        y += Mathf.Sign(ySpeed);
+        //    }
+        //    ySpeed = -(ySpeed / 4);
+        //    if (Mathf.Abs(ySpeed) < 2)
+        //    {
+        //        ySpeed = 0;
+        //    }
+        //}
 
-        y += yspeed;
+        //TODO Used Rigidbody2D
+        transform.position = new Vector3(transform.position.x, transform.position.y + ySpeed);
     }
 
     void ApplyFriction(float frictionAmount)
